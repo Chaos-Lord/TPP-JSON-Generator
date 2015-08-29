@@ -60,12 +60,131 @@ namespace TPP_JSON
             }
             #endregion
         }
-
+        public void CalcHP(ref List<string> lines, byte[]IVs, string PP)
+        {
+            byte[] ivs = new byte[6];//hard copy to avoid changes affecting  other calculations
+            for (int count = 0; count < 6; count++)
+                ivs[count] = IVs[count];
+            string type = "Normal";//Default type to normal in case of accidents
+            int power = 70;//Power to be added to the json, default to 70 in case of a bug
+            for (int count = 0; count < 6; count++)
+            {//removes 0's to avoid divide by zero errors
+                if (ivs[count] == 0)
+                {
+                    ivs[count] = 32;
+                }
+            }
+            string name = "";//Final Hidden power's name, built based on settings
+            
+                switch ((int)Math.Floor((double)(((ivs[0] % 2) + ((ivs[1] % 2) * 2) + ((ivs[2] % 2) * 4) + ((ivs[5] % 2) * 8) + ((ivs[3] % 2) * 16) + ((ivs[4] % 2) * 32)) * 15) / 63))
+                {//find and store type in type and maybe name, depending on settings
+                    case 0:
+                        if (HPtype.Checked)//If type is included in name, do it here
+                            name = " Fighting";
+                        type = "Fighting";
+                        break;
+                    case 1:
+                        if (HPtype.Checked)
+                            name = " Flying";
+                        type = "Flying";
+                        break;
+                    case 2:
+                        if (HPtype.Checked)
+                            name = " Poison";
+                        type = "Poison";
+                        break;
+                    case 3:
+                        if (HPtype.Checked)
+                        name =  " Ground";
+                        type = "Ground";
+                        break;
+                    case 4:
+                        if (HPtype.Checked)
+                        name =  " Rock";
+                        type = "Rock";
+                        break;
+                    case 5:
+                        if (HPtype.Checked)
+                        name =  " Bug";
+                        type = "Bug";
+                        break;
+                    case 6:
+                        if (HPtype.Checked)
+                        name =  " Ghost";
+                        type = "Ghost";
+                        break;
+                    case 7:
+                        if (HPtype.Checked)
+                        name =  " Steel";
+                        type = "Steel";
+                        break;
+                    case 8:
+                        if (HPtype.Checked)
+                        name =  " Fire";
+                        type = "Fire";
+                        break;
+                    case 9:
+                        if (HPtype.Checked)
+                        name =  " Water";
+                        type = "Water";
+                        break;
+                    case 10:
+                        if (HPtype.Checked)
+                        name =  " Grass";
+                        type = "Grass";
+                        break;
+                    case 11:
+                        if (HPtype.Checked)
+                        name =  " Electric";
+                        type = "Electric";
+                        break;
+                    case 12:
+                        if (HPtype.Checked)
+                        name =  " Psychic";
+                        type = "Psychic";
+                        break;
+                    case 13:
+                        if (HPtype.Checked)
+                        name =  " Ice";
+                        type = "Ice";
+                        break;
+                    case 14:
+                        if (HPtype.Checked)
+                        name =  " Dragon";
+                        type = "Dragon";
+                        break;
+                    case 15:
+                        if (HPtype.Checked)
+                        name =  " Dark";
+                        type = "Dark";
+                        break;
+                    default:
+                        name =  " BUGGED, PLEASE FIX";
+                        break;
+                }
+                for (int count = 0; count < 6; count++)
+                {//Find wether the IV is a damage bit or not
+                    ivs[count] %= 4;
+                    ivs[count] = (byte)Math.Floor((Double)ivs[count] / 2);
+                } 
+                power = (((ivs[0] + (ivs[1] * 2) + (ivs[2] * 4) + (ivs[5] * 8) + (ivs[3] * 16) + (ivs[4] * 32)) * 40) / 63 + 30);//calculate HP power
+            if (HPpow.Checked)//add it to name is tick is checked
+                name += (" " + power + " BP");
+            if (name == "")//If nothing is checked, use default name
+             name = "Hidden Power"; 
+            else
+             name = "HP" + name;
+                lines.Add(GetLine("name", name, 4, true));
+            lines.Add(Tabs(4) + GetKey("power") + ": " + power + ",");
+            lines.Add(Tabs(4) + GetKey("pp") + ": " + PP + ",");
+            lines.Add(GetLine("type", type, 4, false));
+        }
         public Dictionary<ushort, string> Species;
         public Move[] moves;
 
         private void B_Go_Click(object sender, EventArgs e)
         {
+            ErrorBlock.Text = "";
             B_Go.Enabled = B_Open.Enabled = false;
             PB_Progress.Maximum = 540;
             PB_Progress.Minimum = 0;
@@ -162,21 +281,71 @@ namespace TPP_JSON
             lines.Add(GetLine("ability", abilities[mon[0x15]], 2, true));
             lines.Add(GetLine("dexNumber", BitConverter.ToUInt16(mon, 0x8), 2, true));
             lines.Add(Tabs(2) + GetKey("enabled") + ": true,");
-            if (CHK_TPPArceusFix.Checked)
-            {
+        //  if ()
+           // {
                 int item = BitConverter.ToInt16(mon, 0xA);
-                if (BitConverter.ToUInt16(mon, 0x8) == 493 && item > 0x129 && item < 0x13A)
+                string ArcType = "Normal";
+                if (CalcArceus.Checked && BitConverter.ToUInt16(mon, 0x8) == 493 && item > 0x129 && item < 0x13A) // If arceus, check for plates and forme accordingly
                 {
-                    int[] PlateToType = new int[] { 9, 10, 12, 11, 14, 1, 3, 4, 2, 13, 6, 5, 7, 15, 16, 8 };
-                    lines.Add(GetLine("form", (PlateToType[item - 0x12A]), 2, true));
+                    int[] PlateToType = new int[] { 9, 10, 12, 11, 14, 1, 3, 4, 2, 13, 6, 5, 7, 15, 16, 8 };// Type order: "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", 
+                   //"Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel". OK, IDK then
+                    switch ((item - 0x12A)+1)
+                    {
+                        case 1:
+                            ArcType = "Fire";
+                                break;
+                        case 2:
+                                ArcType = "Water";
+                                break;
+                        case 3:
+                                ArcType = "Electric";
+                                break;
+                        case 4:
+                                ArcType = "Grass";
+                                break;
+                        case 5:
+                                ArcType = "Ice";
+                                break;
+                        case 6:
+                                ArcType = "Fighting";
+                                break;
+                        case 7:
+                                ArcType = "Poison";
+                                break;
+                        case 8:
+                                ArcType = "Ground";
+                                break;
+                        case 9:
+                                ArcType = "Flying";
+                                break;
+                        case 10:
+                                ArcType = "Psychic";
+                                break;
+                        case 11:
+                                ArcType = "Bug";
+                                break;
+                        case 12:
+                                ArcType = "Rock";
+                                break;
+                        case 13:
+                                ArcType = "Ghost";
+                                break;
+                        case 14:
+                                ArcType = "Dragon";
+                                break;
+                        case 15:
+                                ArcType = "Dark";
+                                break;
+                        case 16:
+                                ArcType = "Steel";
+                                break;
+
+                    }
+                   lines.Add(GetLine("form", (PlateToType[item - 0x12A]), 2, true));
                 }
                 else
                     lines.Add(GetLine("form", (mon[0x40] >> 3), 2, true));
-            }
-            else
-            {
-                lines.Add(GetLine("form", (mon[0x40] >> 3), 2, true));
-            }     
+              
             string gender = null;
             switch ((mon[0x40] >> 1) & 3)
             {
@@ -195,6 +364,16 @@ namespace TPP_JSON
             lines.Add(GetLine("item", items[BitConverter.ToUInt16(mon, 0x0A)], 2, true));
             lines.Add(GetLine("iv", ((mon[0x38] << 0) & 0x1F), 2, true));
             lines.Add(Tabs(2) + GetKey("moves") + ": [");
+            uint iv = BitConverter.ToUInt32(mon, 0x38);
+            byte[] ivs = new byte[6];
+            for (int i = 0; i < ivs.Length; i++)
+            {
+                ivs[i] = (byte)((iv >> (i * 5)) & 0x1f);
+            }
+            byte swap = ivs[3]; //Swap = speed
+            ivs[3] = ivs[4]; //speed = Spa
+            ivs[4] = ivs[5]; //Spa = spd
+            ivs[5] = swap; //spd = speed
             for (int i = 0; i < 4; i++)
             {
                 string[] directions = new string[] { "up", "right", "left", "down" };
@@ -207,10 +386,31 @@ namespace TPP_JSON
                 lines.Add(Tabs(4) + GetKey("accuracy") + ": " + (mov.accuracy) + ",");
                 lines.Add(GetLine("category", mov.category, 4, true));
                 lines.Add(GetLine("direction", directions[i], 4, true));
-                lines.Add(GetLine("name", mov.name, 4, true));
-                lines.Add(Tabs(4) + GetKey("power") + ": " + mov.power + ",");
-                lines.Add(Tabs(4) + GetKey("pp") + ": " + mov.pp + ",");
-                lines.Add(GetLine("type", mov.type, 4, false));
+                if (mov.name == "Hidden Power")
+                {
+                    CalcHP(ref lines, ivs, mov.pp);
+                }
+                else if (ReturnPow.Checked && (mov.name == "Return" || mov.name == "Frustration"))
+                {
+                    lines.Add(GetLine("name", mov.name + " 102 BP", 4, true));
+                    lines.Add(Tabs(4) + GetKey("power") + ": " + 102 + ",");
+                    lines.Add(Tabs(4) + GetKey("pp") + ": " + mov.pp + ",");
+                    lines.Add(GetLine("type", mov.type, 4, false));
+                }
+                else if (mov.name == "Judgment")
+                {
+                    lines.Add(GetLine("name", mov.name, 4, true));
+                    lines.Add(Tabs(4) + GetKey("power") + ": " + mov.power + ",");
+                    lines.Add(Tabs(4) + GetKey("pp") + ": " + mov.pp + ",");
+                    lines.Add(GetLine("type", ArcType, 4, false));
+                }
+                else
+                {
+                    lines.Add(GetLine("name", mov.name, 4, true));
+                    lines.Add(Tabs(4) + GetKey("power") + ": " + mov.power + ",");
+                    lines.Add(Tabs(4) + GetKey("pp") + ": " + mov.pp + ",");
+                    lines.Add(GetLine("type", mov.type, 4, false));
+                }
                 lines.Add(Tabs(3) + "}" + ((i < 3 && nextmove != 0) ? "," : String.Empty));
             }
             #region nickname
@@ -258,17 +458,20 @@ namespace TPP_JSON
             evs[3] = mon[0x1C];
             evs[4] = mon[0x1D];
             evs[5] = mon[0x1B];
-            string[] stats = new string[] { "hp", "atk", "def", "spa", "spd", "spe" };
-            uint iv = BitConverter.ToUInt32(mon, 0x38);
-            byte[] ivs = new byte[6];
-            for (int i = 0; i < ivs.Length; i++)
+            if(evs[0]+evs[1]+evs[2]+evs[3]+evs[4]+evs[5] > 510)
             {
-                ivs[i] = (byte)((iv >> (i * 5)) & 0x1f);
+                if (ErrorBlock.Text == "")
+                {
+                    ErrorBlock.Text = "Too Many EVS: ";
+                }
+                else
+                {
+                    ErrorBlock.Text += ", ";
+                }
+                ErrorBlock.Text += GetName(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F), BitConverter.ToUInt16(mon, 0xA), isShiny(mon));
             }
-            byte swap = ivs[3]; //Swap = speed
-            ivs[3] = ivs[4]; //speed = Spa
-            ivs[4] = ivs[5]; //Spa = spd
-            ivs[5] = swap; //spd = speed
+            string[] stats = new string[] { "hp", "atk", "def", "spa", "spd", "spe" };
+          
             uint exp = BitConverter.ToUInt32(mon,0x10);
             byte level = GetLevel(BitConverter.ToInt16(mon, 0x08), exp);
             int[] swaps = { 0, 1, 2, 5, 3, 4 };
@@ -280,7 +483,7 @@ namespace TPP_JSON
                 if (i == 0)
                 {
                     if (GetBaseStats(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F))[i] == 1)
-                        st = 1;
+                        st = 1;// this SHOULD be accounting for shed already....
                     else
                         st = (((ivs[i] + 2 * GetBaseStats(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F))[i] + evs[i] / 4 + 100) * level) / 100) + 10;
                 }
@@ -304,12 +507,17 @@ namespace TPP_JSON
             }
             lines.Add(Tabs(2) + "},");
             lines.Add(Tabs(2) + GetKey("types") + ": [");
-            for (int i = 0; i < GetTypings(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F)).Length; i++)
+            if (BitConverter.ToUInt16(mon, 0x8) == 493)//If arceus
+                lines.Add(Tabs(3) + "\"" + ArcType + "\""); //add arceus type instead of fetching from database
+            else
             {
-                string line = GetKey(GetTypings(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F))[i]);
-                if (i < GetTypings(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F)).Length - 1)
-                    line += ",";
-                lines.Add(Tabs(3) + line);
+                for (int i = 0; i < GetTypings(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F)).Length; i++)//for each type mon has
+                {
+                    string line = GetKey(GetTypings(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F))[i]);//record type
+                    if (i < GetTypings(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F)).Length - 1)//If 2 types, add comma
+                        line += ",";
+                    lines.Add(Tabs(3) + line);
+                }
             }
             lines.Add(Tabs(2) + "]");
             lines.Add("    }" + (position < 539 ? "," : String.Empty));
@@ -369,18 +577,27 @@ namespace TPP_JSON
         private string GetName(int species, int form, int item, bool isShiny)
         {
             string name;
-            if (species == 493 && item > 0x129 && item < 0x13A) //Arceus with plate
+            if (FormeName.Checked)
             {
-                string[] Plates = new string[] { "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel" };
-                name = "Arceus " + Plates[item - 0x12A];
+                if (species == 493 && item > 0x129 && item < 0x13A) //Arceus with plate
+                {
+                    string[] Plates = new string[] { "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel" };
+                    name = "Arceus " + Plates[item - 0x12A];
+                }
+                else
+                {
+                    ushort sp = (ushort)(((form) << 11) | (species << 1));
+                    name = Species[sp];
+                }
+                if (isShiny)
+                    name += " (Shiny)";
             }
             else
             {
                 ushort sp = (ushort)(((form) << 11) | (species << 1));
                 name = Species[sp];
             }
-            if (isShiny)
-                name += " (Shiny)";
+            
             return name;
         }
 
@@ -8040,6 +8257,21 @@ new int[]{120,120,120,120,120,120}
                 TB_In.Text = ofd.FileName;
                 B_Go.Enabled = true;
             }
+        }
+
+        private void TB_In_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void CHK_TPPArceusFix_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
 
     }

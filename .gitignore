@@ -1,0 +1,10 @@
+TPP JSON Generator/bin/Debug/TPP JSON.exe
+TPP JSON Generator/bin/Debug/TPP JSON.pdb
+*.exe
+TPP JSON Generator/obj/x86/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+TPP JSON Generator/obj/x86/Debug/TPP JSON Generator.csproj.FileListAbsolute.txt
+*.Cache
+TPP JSON Generator/obj/x86/Release/TPP JSON Generator.csproj.FileListAbsolute.txt
+*.resources
+TPP JSON Generator/obj/x86/Debug/TPP JSON.pdb
+*.pdb

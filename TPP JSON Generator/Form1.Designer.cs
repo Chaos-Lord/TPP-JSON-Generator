@@ -38,6 +38,8 @@
             this.HPpow = new System.Windows.Forms.CheckBox();
             this.ErrorBlock = new System.Windows.Forms.Label();
             this.ReturnPow = new System.Windows.Forms.CheckBox();
+            this.useBP = new System.Windows.Forms.CheckBox();
+            this.useBackup = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // B_Go
@@ -131,7 +133,7 @@
             this.ErrorBlock.AutoSize = true;
             this.ErrorBlock.BackColor = System.Drawing.SystemColors.ControlLight;
             this.ErrorBlock.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ErrorBlock.Location = new System.Drawing.Point(12, 119);
+            this.ErrorBlock.Location = new System.Drawing.Point(9, 142);
             this.ErrorBlock.MaximumSize = new System.Drawing.Size(400, 40);
             this.ErrorBlock.Name = "ErrorBlock";
             this.ErrorBlock.Size = new System.Drawing.Size(0, 13);
@@ -142,18 +144,40 @@
             this.ReturnPow.AutoSize = true;
             this.ReturnPow.Checked = true;
             this.ReturnPow.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ReturnPow.Location = new System.Drawing.Point(289, 99);
+            this.ReturnPow.Location = new System.Drawing.Point(292, 76);
             this.ReturnPow.Name = "ReturnPow";
             this.ReturnPow.Size = new System.Drawing.Size(130, 17);
             this.ReturnPow.TabIndex = 9;
             this.ReturnPow.Text = "Show Return/frust BP";
             this.ReturnPow.UseVisualStyleBackColor = true;
             // 
+            // useBP
+            // 
+            this.useBP.AutoSize = true;
+            this.useBP.Location = new System.Drawing.Point(12, 122);
+            this.useBP.Name = "useBP";
+            this.useBP.Size = new System.Drawing.Size(183, 17);
+            this.useBP.TabIndex = 10;
+            this.useBP.Text = "Append BP to variable BP moves";
+            this.useBP.UseVisualStyleBackColor = true;
+            // 
+            // useBackup
+            // 
+            this.useBackup.AutoSize = true;
+            this.useBackup.Location = new System.Drawing.Point(292, 100);
+            this.useBackup.Name = "useBackup";
+            this.useBackup.Size = new System.Drawing.Size(85, 17);
+            this.useBackup.TabIndex = 11;
+            this.useBackup.Text = "Use Backup";
+            this.useBackup.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(436, 166);
+            this.ClientSize = new System.Drawing.Size(436, 199);
+            this.Controls.Add(this.useBackup);
+            this.Controls.Add(this.useBP);
             this.Controls.Add(this.ReturnPow);
             this.Controls.Add(this.ErrorBlock);
             this.Controls.Add(this.HPpow);
@@ -183,6 +207,8 @@
         private System.Windows.Forms.CheckBox HPpow;
         private System.Windows.Forms.Label ErrorBlock;
         private System.Windows.Forms.CheckBox ReturnPow;
+        private System.Windows.Forms.CheckBox useBP;
+        private System.Windows.Forms.CheckBox useBackup;
     }
 }
 

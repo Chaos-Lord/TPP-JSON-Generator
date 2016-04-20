@@ -169,7 +169,9 @@ namespace TPP_JSON
                 } 
                 power = (((ivs[0] + (ivs[1] * 2) + (ivs[2] * 4) + (ivs[5] * 8) + (ivs[3] * 16) + (ivs[4] * 32)) * 40) / 63 + 30);//calculate HP power
             if (HPpow.Checked)//add it to name is tick is checked
-                name += (" " + power + " BP");
+                name += (" " + power);
+            if (useBP.Checked == true)
+                name += (" BP");
             if (name == "")//If nothing is checked, use default name
              name = "Hidden Power"; 
             else
@@ -205,13 +207,27 @@ namespace TPP_JSON
             uint save_a = BitConverter.ToUInt32(save, 0xCF1C);
             uint save_b = BitConverter.ToUInt32(save, 0x4CF1C);
             List<string> sav;
-            if (save_a > save_b)
+            if (useBackup.Checked == true)
             {
-                sav = BuildJSON(save.Take(0x40000).ToArray());
+                if (save_a <= save_b) //check which blockset is bigger?
+                {
+                    sav = BuildJSON(save.Take(0x40000).ToArray());
+                }
+                else
+                {
+                    sav = BuildJSON(save.Skip(0x40000).Take(0x40000).ToArray());
+                }
             }
             else
             {
-                sav = BuildJSON(save.Skip(0x40000).Take(0x40000).ToArray());
+                if (save_a > save_b) //check which blockset is bigger?
+                {
+                    sav = BuildJSON(save.Take(0x40000).ToArray());
+                }
+                else
+                {
+                    sav = BuildJSON(save.Skip(0x40000).Take(0x40000).ToArray());
+                }
             }
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.FileName = "out.json";
@@ -392,7 +408,10 @@ namespace TPP_JSON
                 }
                 else if (ReturnPow.Checked && (mov.name == "Return" || mov.name == "Frustration"))
                 {
-                    lines.Add(GetLine("name", mov.name + " 102 BP", 4, true));
+                    if(useBP.Checked == true)
+                        lines.Add(GetLine("name", mov.name + " 102 BP", 4, true));
+                    else
+                        lines.Add(GetLine("name", mov.name + " 102", 4, true));
                     lines.Add(Tabs(4) + GetKey("power") + ": " + 102 + ",");
                     lines.Add(Tabs(4) + GetKey("pp") + ": " + mov.pp + ",");
                     lines.Add(GetLine("type", mov.type, 4, false));
@@ -462,13 +481,16 @@ namespace TPP_JSON
             {
                 if (ErrorBlock.Text == "")
                 {
-                    ErrorBlock.Text = "Too Many EVS: ";
+                    ErrorBlock.BeginInvoke(
+             ((Action)(() => ErrorBlock.Text = "Too Many EVS: "))); 
                 }
                 else
                 {
-                    ErrorBlock.Text += ", ";
+                    ErrorBlock.BeginInvoke(
+             ((Action)(() => ErrorBlock.Text += ", "))); 
                 }
-                ErrorBlock.Text += GetName(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F), BitConverter.ToUInt16(mon, 0xA), isShiny(mon));
+               ErrorBlock.BeginInvoke(
+             ((Action)(() => ErrorBlock.Text += GetName(BitConverter.ToUInt16(mon, 0x8), (mon[0x40] >> 3 & 0x1F), BitConverter.ToUInt16(mon, 0xA), isShiny(mon)))));
             }
             string[] stats = new string[] { "hp", "atk", "def", "spa", "spd", "spe" };
           
@@ -613,8 +635,8 @@ namespace TPP_JSON
 
         private byte[] DecryptMon(byte[] mon)
         {
-            byte[] pkm = new byte[mon.Length];
-            Array.Copy(mon, pkm, mon.Length);
+            byte[] pkm = new byte[mon.Length]; //Array of bytes equal to legnth of a mon
+            Array.Copy(mon, pkm, mon.Length); //mon data into pkm
             uint pv = BitConverter.ToUInt32(mon, 0);
             uint sv = (((pv & 0x3E000) >> 0xD) % 24);
             uint seed = BitConverter.ToUInt16(mon, 6);
